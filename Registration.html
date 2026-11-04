@@ -1,0 +1,57 @@
+<html>
+<head>
+<title>Registration Page</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="logo">
+    <img src="wavy-logo.png" alt="Wavy logo">
+    <span>Wavy</span>
+</div>
+
+<h1>Create your account</h1>
+<p>Join your community and start connecting.</p>
+
+<form class="register-form" novalidate>
+<label for="fullname">Full Name</label>
+<input 	type="text"
+		id="fullname" 
+		name="fullname" 
+		placeholder="Enter your full name" 
+		required>
+<br>
+<label for="username">Username</label>
+<input 	type="text"
+		id="username"
+		name="username"
+		placeholder="@username"
+		required>
+<br>
+<label for="email">Email address</label>
+<input 	type="email" 
+		id="email" 
+		name="email" 
+		placeholder="you@example.com" required>
+<br>
+
+<label for="password">Password</label>
+
+<div class="password-field">
+    <input 	type="password" 
+			id="password" 
+			name="password"
+			placeholder="Create a password" 
+			required>
+
+    <button type="button" 
+			class="password-toggle"
+            aria-label="Show password"
+            aria-pressed="false">Show
+    </button>
+</div>
+<button type="submit">Create account</button>
+</form>
+<p>Already have an account?<a href="login.html">Log in</a></p>
+<script src="script.js" defer></script>
+</body>
+</html>

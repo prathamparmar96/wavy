@@ -1,0 +1,394 @@
+/* ================================
+   WAVY — LOGIN & REGISTRATION
+================================ */
+
+:root {
+    --bg: #151923;
+    --card: #202635;
+    --input-bg: #151923;
+    --border: #363B4A;
+
+    --green: #A5FF5F;
+    --green-hover: #B7FF82;
+    --green-shadow: #5B9630;
+
+    --purple: #7C5CFC;
+    --red: #FF7B82;
+
+    --text: #FFFFFF;
+    --muted: #A0A8B8;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px 16px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+
+    background: var(--bg);
+    color: var(--text);
+    font-family: Arial, sans-serif;
+}
+
+/* Logo */
+
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 4px 0 18px;
+}
+
+.logo img {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+}
+
+.logo span {
+    color: var(--green);
+    font-size: 26px;
+    font-weight: bold;
+}
+
+/* Heading */
+
+h1 {
+    margin: 0 0 8px;
+    text-align: center;
+    font-size: 28px;
+}
+
+.subtitle {
+    margin: 0 0 18px;
+    text-align: center;
+    line-height: 1.5;
+}
+
+/* Form card */
+
+.register-form {
+    width: min(100%, 440px);
+    margin: 0 auto 22px;
+    padding: 22px 26px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+
+    background: var(--card);
+    border-radius: 12px;
+}
+
+/* Labels and inputs */
+
+.register-form label {
+    display: block;
+    margin: 0 0 6px;
+    font-size: 15px;
+}
+
+.register-form input {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    height: 44px;
+    padding: 0 13px;
+
+    background: var(--input-bg);
+    color: var(--text);
+
+    border: 1px solid var(--border);
+    border-radius: 7px;
+
+    font-family: inherit;
+    font-size: 15px;
+
+    transition: border-color 0.2s ease, outline 0.2s ease;
+}
+
+.register-form .form-group {
+    margin: 0 0 14px;
+}
+
+.register-form input::placeholder {
+    color: #7E8799;
+}
+
+.register-form input:focus {
+    outline: 2px solid var(--purple);
+    outline-offset: 1px;
+    border-color: transparent;
+}
+
+.register-form input[aria-invalid="true"] {
+    border-color: var(--red);
+    outline: 1px solid var(--red);
+}
+
+.register-form input[aria-invalid="false"] {
+    border-color: var(--green);
+}
+
+/* Main button */
+
+.register-form button:not(.password-toggle) {
+    width: 100%;
+    min-height: 46px;
+    margin-top: 10px;
+    padding: 11px 16px;
+
+    background: var(--green);
+    color: var(--bg);
+
+    border: none;
+    border-radius: 10px;
+
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+
+    box-shadow: 0 4px 0 var(--green-shadow);
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.register-form button:not(.password-toggle):hover {
+    background: var(--green-hover);
+}
+
+.register-form button:not(.password-toggle):active {
+    transform: translateY(4px);
+    box-shadow: none;
+}
+
+.register-form button:not(.password-toggle):focus-visible {
+    outline: 2px solid var(--purple);
+    outline-offset: 4px;
+}
+
+/* Password input and toggle */
+
+.password-field {
+    position: relative;
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.password-field input {
+    padding-right: 78px;
+}
+
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    z-index: 1;
+
+    width: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 7px 9px;
+
+    background: transparent;
+    color: var(--green);
+
+    border: none;
+    border-radius: 6px;
+    box-shadow: none;
+
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.password-toggle:hover {
+    background: transparent;
+    color: var(--green-hover);
+}
+
+.password-toggle:active {
+    transform: translateY(-50%);
+    box-shadow: none;
+}
+
+/* JS sets aria-pressed="true" when password is visible */
+.password-toggle[aria-pressed="true"] {
+    color: var(--red);
+}
+
+.password-toggle[aria-pressed="true"]:hover {
+    color: #ff9aa0;
+}
+
+.password-toggle:focus-visible {
+    outline: 2px solid var(--purple);
+    outline-offset: 2px;
+}
+
+/* Hide Edge's built-in password reveal icon */
+
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none;
+}
+
+/* Username and password checklists */
+
+.username-checklist,
+.password-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    margin: 9px 0 10px;
+    padding: 0;
+
+    list-style: none;
+}
+
+.username-rule,
+.password-rule {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin: 0;
+
+    color: var(--red);
+    font-size: 13px;
+    line-height: 1.4;
+
+    transition: color 0.2s ease;
+}
+
+/* Keep "Not yet" and "Done" on one line */
+
+.rule-status,
+.username-rule .rule-status {
+    flex: 0 0 64px;
+    min-width: 64px;
+    white-space: nowrap;
+
+    color: var(--red);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.username-rule.valid,
+.username-rule.valid .rule-status,
+.password-rule.valid,
+.password-rule.valid .rule-status {
+    color: var(--green);
+}
+
+/* Optional password status */
+
+.password-status {
+    margin: 6px 0 8px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.password-status.valid {
+    color: var(--green);
+}
+
+.password-status.invalid {
+    color: var(--red);
+}
+
+/* Validation messages */
+
+.error-message {
+    margin: 5px 0 0;
+    color: var(--red);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.success-message {
+    margin: 12px 0 0;
+    color: var(--green);
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+/* Hidden messages take no space */
+
+[hidden] {
+    display: none !important;
+}
+
+/* Links */
+
+a {
+    color: var(--green);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: var(--green-hover);
+    text-decoration: underline;
+}
+
+a:focus-visible {
+    outline: 2px solid var(--purple);
+    outline-offset: 3px;
+}
+
+/* Responsive */
+
+@media (max-width: 480px) {
+    body {
+        padding: 16px 12px;
+    }
+
+    .logo {
+        margin: 4px 0 16px;
+    }
+
+    .logo img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .logo span {
+        font-size: 24px;
+    }
+
+    h1 {
+        font-size: 25px;
+    }
+
+    .register-form {
+        padding: 20px;
+    }
+
+    .register-form input {
+        font-size: 16px;
+    }
+}
+
+/* Reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}
