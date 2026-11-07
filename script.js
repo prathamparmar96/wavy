@@ -1,417 +1,547 @@
-/* ================================
+
+/* =================================
    WAVY — LOGIN & REGISTRATION
-================================ */
+================================= */
 
 document.addEventListener("DOMContentLoaded", () => {
+
     const forms = document.querySelectorAll(".register-form");
 
-    forms.forEach((form) => {
-        const isRegistration = Boolean(form.querySelector("#fullname"));
+    forms.forEach(form => {
+
+        form.noValidate = true;
 
         const nameInput = form.querySelector("#fullname");
         const usernameInput = form.querySelector("#username");
         const emailInput = form.querySelector("#email");
         const passwordInput = form.querySelector("#password");
 
-        const submitButton = form.querySelector(
-            'button[type="submit"], input[type="submit"]'
-        );
+        const isRegistration = Boolean(nameInput && usernameInput);
+
+        const formMessage = form.querySelector(".form-message");
 
         let submitted = false;
 
-        /* ---------- Helpers ---------- */
+        const touched = new Set();
 
-        function getOrCreateMessage(input, className) {
-            const wrapper = input.closest(".form-group") || input.parentElement;
-            let message = wrapper.querySelector(`.${className}`);
+        /* COMMON HELPERS */
 
-            if (!message) {
-                message = document.createElement("p");
-                message.className = className;
-                message.hidden = true;
+        function setError(input, message) {
+            if (!input) return false;
 
-                if (input.closest(".password-field")) {
-                    input.closest(".password-field").insertAdjacentElement(
-                        "afterend",
-                        message
-                    );
-                } else {
-                    input.insertAdjacentElement("afterend", message);
-                }
+            const error = document.getElementById(input.id + "Error");
+
+            if (error) {
+                error.textContent = message;
+                error.hidden = !message;
             }
 
-            return message;
-        }
-
-        function showMessage(input, messageElement, text) {
-            messageElement.textContent = text;
-            messageElement.hidden = !text;
-
-            if (text) {
+            if (message) {
                 input.setAttribute("aria-invalid", "true");
-            } else {
-                input.setAttribute("aria-invalid", "false");
+                return false;
             }
-        }
 
-        function clearMessage(input, messageElement) {
-            messageElement.textContent = "";
-            messageElement.hidden = true;
             input.removeAttribute("aria-invalid");
+            return true;
         }
 
-        /* ---------- Full name ---------- */
+        function showMessage(message, isError = false) {
+            if (!formMessage) return;
 
-        let nameMessage;
+            formMessage.textContent = message;
+            formMessage.hidden = false;
+            formMessage.classList.toggle("error", isError);
+        }
 
-        if (nameInput) {
-            nameMessage = getOrCreateMessage(nameInput, "error-message");
-            nameMessage.hidden = true;
+        function clearMessage() {
+            if (!formMessage) return;
 
-            function validateName() {
-                const value = nameInput.value.trim();
+            formMessage.textContent = "";
+            formMessage.hidden = true;
+            formMessage.classList.remove("error");
+        }
 
-                if (!value) {
-                    showMessage(nameInput, nameMessage, "Enter your full name.");
-                    return false;
-                }
+        function markTouched(input) {
+            if (input) touched.add(input.id);
+        }
 
-                if (!/^[A-Za-z]+(?:[ '-][A-Za-z]+)*$/.test(value)) {
-                    showMessage(
-                        nameInput,
-                        nameMessage,
-                        "Use letters and spaces only. Example: Mahesh Shah."
-                    );
-                    return false;
-                }
+        /* FULL NAME */
 
-                clearMessage(nameInput, nameMessage);
-                return true;
+        function validateName() {
+            const value = nameInput.value.trim();
+
+            const valid =
+                /^[\p{L}\p{M}]+(?:[ '-][\p{L}\p{M}]+)*$/u.test(value);
+
+            let message = "";
+
+            if (!value) {
+                message = "Enter your full name.";
+            } else if (!valid) {
+                message = "Use letters and spaces only.";
             }
 
-            nameInput.addEventListener("input", () => {
-                if (submitted || nameInput.value.trim()) {
-                    validateName();
-                } else {
-                    clearMessage(nameInput, nameMessage);
-                }
-            });
-
-            nameInput.addEventListener("blur", () => {
-                if (nameInput.value.trim()) validateName();
-            });
+            return setError(nameInput, valid ? "" : message);
         }
 
-        /* ---------- Username ---------- */
+        /* USERNAME RULES */
 
-        let usernameMessages = [];
+        const usernameRules = [
+            {
+                id: "length",
+                test: value => value.length >= 3 && value.length <= 20
+            },
+            {
+                id: "characters",
+                test: value => /^[A-Za-z0-9_.]+$/.test(value)
+            },
+            {
+                id: "dots",
+                test: value =>
+                    !value.startsWith(".") &&
+                    !value.endsWith(".") &&
+                    !value.includes("..")
+            }
+        ];
 
-        if (usernameInput) {
-            const checklist = document.createElement("ul");
-            checklist.className = "username-checklist";
-            checklist.hidden = true;
+        function validateUsername() {
+            const value = usernameInput.value;
+            const checklist = document.getElementById("usernameRules");
 
-            const usernameRules = [
-                {
-                    text: "3–20 characters",
-                    test: (value) => value.length >= 3 && value.length <= 20
-                },
-                {
-                    text: "Letters, numbers, _ or . only",
-                    test: (value) => /^[A-Za-z0-9_.]+$/.test(value)
-                }
-            ];
+            if (!checklist) return false;
 
-            usernameRules.forEach((rule) => {
-                const item = document.createElement("li");
-                item.className = "username-rule";
+            if (!value && !submitted && !touched.has("username")) {
+                checklist.hidden = true;
+                setError(usernameInput, "");
+                return false;
+            }
 
-                const status = document.createElement("span");
-                status.className = "rule-status";
-                status.textContent = "Not yet";
+            checklist.hidden = !value;
 
-                const text = document.createElement("span");
-                text.textContent = rule.text;
+            let allValid = true;
 
-                item.append(status, text);
-                checklist.appendChild(item);
-
-                usernameMessages.push({ item, status, rule });
-            });
-
-            usernameInput.insertAdjacentElement("afterend", checklist);
-
-            function validateUsername() {
-                const value = usernameInput.value.trim();
-
-                if (!value) {
-                    checklist.hidden = !submitted;
-                    usernameInput.removeAttribute("aria-invalid");
-                    usernameMessages.forEach(({ item, status }) => {
-                        item.classList.remove("valid");
-                        status.textContent = "Not yet";
-                    });
-                    return !submitted;
-                }
-
-                checklist.hidden = false;
-                let allValid = true;
-
-                usernameMessages.forEach(({ item, status, rule }) => {
-                    const valid = rule.test(value);
-
-                    item.classList.toggle("valid", valid);
-                    status.textContent = valid ? "Done" : "Not yet";
-
-                    if (!valid) allValid = false;
-                });
-
-                usernameInput.setAttribute(
-                    "aria-invalid",
-                    allValid ? "false" : "true"
+            usernameRules.forEach(rule => {
+                const item = checklist.querySelector(
+                    `[data-rule="${rule.id}"]`
                 );
 
-                return allValid;
+                if (!item) return;
+
+                const status = item.querySelector(".rule-status");
+                const valid = rule.test(value);
+
+                item.classList.toggle("valid", valid);
+
+                if (status) {
+                    status.textContent = valid ? "✅" : "❌";
+                }
+
+                if (!valid) allValid = false;
+            });
+
+            if (!value) {
+                setError(usernameInput, "Enter a username.");
+                return false;
             }
 
-            usernameInput.addEventListener("input", validateUsername);
-            usernameInput.addEventListener("blur", () => {
-                if (usernameInput.value.trim()) validateUsername();
-            });
-        }
-
-        /* ---------- Email ---------- */
-
-        let emailMessage;
-
-        if (emailInput) {
-            emailMessage = getOrCreateMessage(emailInput, "error-message");
-            emailMessage.hidden = true;
-
-            function validateEmail() {
-                const value = emailInput.value.trim();
-
-                if (!value) {
-                    showMessage(emailInput, emailMessage, "Enter your email address.");
-                    return false;
-                }
-
-                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
-                if (!emailPattern.test(value)) {
-                    showMessage(
-                        emailInput,
-                        emailMessage,
-                        "Enter a valid email address. Example: name@gmail.com."
-                    );
-                    return false;
-                }
-
-                clearMessage(emailInput, emailMessage);
-                return true;
+            if (!allValid) {
+                setError(
+                    usernameInput,
+                    "Please follow all username requirements."
+                );
+                return false;
             }
 
-            emailInput.addEventListener("input", () => {
-                if (submitted || emailInput.value.trim()) {
-                    validateEmail();
-                } else {
-                    clearMessage(emailInput, emailMessage);
-                }
-            });
-
-            emailInput.addEventListener("blur", () => {
-                if (emailInput.value.trim()) validateEmail();
-            });
+            setError(usernameInput, "");
+            return true;
         }
 
-        /* ---------- Password checklist ---------- */
+        /* EMAIL VALIDATION */
 
-        let passwordRules = [];
-        let passwordStatus;
+        function validateEmail() {
+            const value = emailInput.value.trim();
 
-        if (passwordInput) {
-            const passwordField = passwordInput.closest(".password-field");
+            const emailPattern =
+                /^(?!.*\.\.)[^\s@]+@[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)+$/;
 
-            const checklist = document.createElement("ul");
-            checklist.className = "password-checklist";
-            checklist.hidden = true;
+            let message = "";
 
-            const rules = [
-                {
-                    text: "At least 8 characters",
-                    test: (value) => value.length >= 8
-                },
-                {
-                    text: "One uppercase letter (A-Z)",
-                    test: (value) => /[A-Z]/.test(value)
-                },
-                {
-                    text: "One lowercase letter (a-z)",
-                    test: (value) => /[a-z]/.test(value)
-                },
-                {
-                    text: "One number (0-9)",
-                    test: (value) => /[0-9]/.test(value)
+            if (!value) {
+                message = "Enter your email address.";
+            } else if (!value.includes("@")) {
+                message = "Add @ to your email address.";
+            } else if (!emailPattern.test(value)) {
+                message = "Enter a valid email address.";
+            }
+
+            return setError(emailInput, message);
+        }
+
+        /* PASSWORD RULES */
+
+        const passwordRules = [
+            {
+                id: "length",
+                test: value => value.length >= 8
+            },
+            {
+                id: "uppercase",
+                test: value => /[A-Z]/.test(value)
+            },
+            {
+                id: "lowercase",
+                test: value => /[a-z]/.test(value)
+            },
+            {
+                id: "number",
+                test: value => /[0-9]/.test(value)
+            },
+            {
+                id: "special",
+                test: value => /[^A-Za-z0-9\s]/.test(value)
+            }
+        ];
+
+        /* PASSWORD CHECKLIST */
+
+        function updatePasswordChecklist() {
+            const value = passwordInput.value;
+            const checklist = document.getElementById("passwordRules");
+
+            if (!checklist) return 0;
+
+            checklist.hidden = !value;
+
+            let score = 0;
+
+            passwordRules.forEach(rule => {
+                const item = checklist.querySelector(
+                    `[data-rule="${rule.id}"]`
+                );
+
+                if (!item) return;
+
+                const status = item.querySelector(".rule-status");
+                const valid = rule.test(value);
+
+                item.classList.toggle("valid", valid);
+
+                if (status) {
+                    status.textContent = valid ? "✅" : "❌";
                 }
-            ];
 
-            rules.forEach((rule) => {
-                const item = document.createElement("li");
-                item.className = "password-rule";
-
-                const status = document.createElement("span");
-                status.className = "rule-status";
-                status.textContent = "Not yet";
-
-                const text = document.createElement("span");
-                text.textContent = rule.text;
-
-                item.append(status, text);
-                checklist.appendChild(item);
-
-                passwordRules.push({ item, status, rule });
+                if (valid) score++;
             });
 
-            passwordStatus = document.createElement("p");
-            passwordStatus.className = "password-status";
-            passwordStatus.hidden = true;
+            return score;
+        }
 
-            if (passwordField) {
-                passwordField.insertAdjacentElement("afterend", checklist);
-                checklist.insertAdjacentElement("afterend", passwordStatus);
+        /* PASSWORD STRENGTH — BOTH PAGES */
+
+        function updatePasswordStrength(score, value) {
+
+            const strengthBox =
+                document.getElementById("passwordStrength");
+
+            const strengthFill =
+                document.getElementById("strengthFill");
+
+            const strengthLabel =
+                document.getElementById("strengthLabel");
+
+            if (!strengthBox || !strengthFill || !strengthLabel) return;
+
+            if (!value) {
+                strengthBox.hidden = true;
+                strengthFill.style.width = "0%";
+                strengthFill.className = "strength-fill";
+                strengthLabel.textContent = "";
+                return;
+            }
+
+            strengthBox.hidden = false;
+            strengthFill.className = "strength-fill";
+
+            if (score <= 2) {
+
+                strengthFill.classList.add("weak");
+                strengthFill.style.width =
+                    `${Math.max(score, 1) * 20}%`;
+
+                strengthLabel.textContent = "Weak password";
+
+            } else if (score <= 4) {
+
+                strengthFill.classList.add("fair");
+                strengthFill.style.width = `${score * 20}%`;
+
+                strengthLabel.textContent = "Fair password";
+
             } else {
-                passwordInput.insertAdjacentElement("afterend", checklist);
-                checklist.insertAdjacentElement("afterend", passwordStatus);
+
+                strengthFill.classList.add("strong");
+                strengthFill.style.width = "100%";
+
+                strengthLabel.textContent = "Strong password";
             }
-
-            function validatePassword() {
-                const value = passwordInput.value;
-
-                if (!value) {
-                    checklist.hidden = !submitted;
-                    passwordStatus.hidden = true;
-                    passwordInput.removeAttribute("aria-invalid");
-
-                    passwordRules.forEach(({ item, status }) => {
-                        item.classList.remove("valid");
-                        status.textContent = "Not yet";
-                    });
-
-                    return !submitted;
-                }
-
-                checklist.hidden = false;
-                let allValid = true;
-
-                passwordRules.forEach(({ item, status, rule }) => {
-                    const valid = rule.test(value);
-
-                    item.classList.toggle("valid", valid);
-                    status.textContent = valid ? "Done" : "Not yet";
-
-                    if (!valid) allValid = false;
-                });
-
-                passwordStatus.hidden = true;
-                passwordInput.setAttribute(
-                    "aria-invalid",
-                    allValid ? "false" : "true"
-                );
-
-                return allValid;
-            }
-
-            passwordInput.addEventListener("input", validatePassword);
-            passwordInput.addEventListener("blur", () => {
-                if (passwordInput.value) validatePassword();
-            });
         }
 
-        /* ---------- Show / hide password ---------- */
+        /* PASSWORD VALIDATION */
 
-        form.querySelectorAll(".password-toggle").forEach((toggle) => {
+        function validatePassword() {
+            const value = passwordInput.value;
+
+            if (!value) {
+
+                if (submitted || touched.has("password")) {
+                    setError(passwordInput, "Enter your password.");
+                } else {
+                    setError(passwordInput, "");
+                }
+
+                updatePasswordChecklist();
+                updatePasswordStrength(0, "");
+
+                return false;
+            }
+
+            const score = updatePasswordChecklist();
+
+            // Strength meter updates on BOTH Login and Registration
+            updatePasswordStrength(score, value);
+
+            // Registration requires all 5 password rules
+            if (isRegistration) {
+
+                if (score !== passwordRules.length) {
+                    setError(
+                        passwordInput,
+                        "Complete all password requirements."
+                    );
+
+                    return false;
+                }
+            }
+
+            /*
+              Login checklist is informational.
+              Existing passwords are not blocked by new rules.
+            */
+
+            setError(passwordInput, "");
+            return true;
+        }
+
+        /* SHOW / HIDE PASSWORD */
+
+        const toggle = form.querySelector(".password-toggle");
+
+        if (toggle) {
+
             toggle.addEventListener("click", () => {
-                const field = toggle.closest(".password-field");
-                const input = field?.querySelector("input");
 
-                if (!input) return;
+                const showing = passwordInput.type === "password";
 
-                const showing = input.type === "password";
-                input.type = showing ? "text" : "password";
+                passwordInput.type = showing ? "text" : "password";
+
                 toggle.textContent = showing ? "Hide" : "Show";
-                toggle.style.color = showing ? "var(--red)" : "var(--green)";
+
+                toggle.setAttribute(
+                    "aria-pressed",
+                    String(showing)
+                );
+
                 toggle.setAttribute(
                     "aria-label",
                     showing ? "Hide password" : "Show password"
                 );
             });
+        }
+
+        /* FULL NAME EVENTS */
+
+        if (nameInput) {
+
+            nameInput.addEventListener("input", () => {
+
+                clearMessage();
+
+                if (touched.has("fullname") || submitted) {
+                    validateName();
+                }
+            });
+
+            nameInput.addEventListener("blur", () => {
+
+                if (nameInput.value.trim() || submitted) {
+                    markTouched(nameInput);
+                    validateName();
+                }
+            });
+        }
+
+        /* USERNAME EVENTS */
+
+        if (usernameInput) {
+
+            usernameInput.addEventListener("input", () => {
+
+                clearMessage();
+
+                if (
+                    usernameInput.value ||
+                    touched.has("username") ||
+                    submitted
+                ) {
+                    validateUsername();
+                }
+            });
+
+            usernameInput.addEventListener("blur", () => {
+
+                if (usernameInput.value || submitted) {
+                    markTouched(usernameInput);
+                    validateUsername();
+                }
+            });
+        }
+
+        /* EMAIL EVENTS */
+
+        emailInput.addEventListener("input", () => {
+
+            clearMessage();
+
+            if (touched.has("email") || submitted) {
+                validateEmail();
+            }
         });
 
-        /* ---------- Enter moves to the next field ---------- */
+        emailInput.addEventListener("blur", () => {
+
+            if (emailInput.value.trim() || submitted) {
+                markTouched(emailInput);
+                validateEmail();
+            }
+        });
+
+        /* PASSWORD EVENTS */
+
+        passwordInput.addEventListener("input", () => {
+
+            clearMessage();
+
+            if (
+                passwordInput.value ||
+                touched.has("password") ||
+                submitted
+            ) {
+                validatePassword();
+            }
+        });
+
+        passwordInput.addEventListener("blur", () => {
+
+            if (passwordInput.value || submitted) {
+                markTouched(passwordInput);
+                validatePassword();
+            }
+        });
+
+        /* ENTER KEY NAVIGATION */
 
         const fields = Array.from(
             form.querySelectorAll(
-                'input:not([type="hidden"]):not([type="submit"]):not([disabled])'
+                'input:not([type="hidden"]):not([disabled])'
             )
         );
 
         fields.forEach((field, index) => {
-            field.addEventListener("keydown", (event) => {
+
+            field.addEventListener("keydown", event => {
+
                 if (event.key !== "Enter") return;
 
                 event.preventDefault();
 
-                const nextField = fields[index + 1];
+                if (index < fields.length - 1) {
 
-                if (nextField) {
-                    nextField.focus();
+                    fields[index + 1].focus();
+
                 } else {
-                    form.requestSubmit
-                        ? form.requestSubmit()
-                        : submitButton?.click();
+
+                    form.requestSubmit();
                 }
             });
         });
 
-        /* ---------- Submit validation ---------- */
+        /* FORGOT PASSWORD */
 
-        form.noValidate = true;
+        const forgotButton = form.querySelector("#forgotPassword");
 
-        form.addEventListener("submit", (event) => {
+        if (forgotButton) {
+
+            forgotButton.addEventListener("click", () => {
+
+                clearMessage();
+
+                if (!validateEmail()) {
+
+                    emailInput.focus();
+
+                    showMessage(
+                        "Enter a valid email address first.",
+                        true
+                    );
+
+                    return;
+                }
+
+                showMessage(
+                    "Password reset is not connected yet. Backend setup is required.",
+                    true
+                );
+            });
+        }
+
+        /* FORM SUBMISSION */
+
+        form.addEventListener("submit", event => {
+
+            event.preventDefault();
+
             submitted = true;
+            clearMessage();
 
-            const checks = [];
+            const results = [];
 
-            if (nameInput) checks.push(validateName());
-            if (usernameInput) checks.push(validateUsername());
-            if (emailInput) checks.push(validateEmail());
-            if (passwordInput) checks.push(validatePassword());
+            if (isRegistration) {
+                results.push(validateName());
+                results.push(validateUsername());
+            }
 
-            if (checks.some((valid) => !valid)) {
-                event.preventDefault();
+            results.push(validateEmail());
+            results.push(validatePassword());
+
+            if (!results.every(Boolean)) {
 
                 const firstInvalid = form.querySelector(
                     'input[aria-invalid="true"]'
                 );
 
                 firstInvalid?.focus();
+
                 return;
             }
 
-            // Front-end validation only; no account is created without a backend.
-            event.preventDefault();
+            showMessage(
+                isRegistration
+                    ? "Your details are valid. Account creation is not connected yet."
+                    : "Your details are valid. Login is not connected yet."
+            );
 
-            let message = form.querySelector(".success-message");
-
-            if (!message) {
-                message = document.createElement("p");
-                message.className = "success-message";
-                form.appendChild(message);
-            }
-
-            message.textContent = isRegistration
-                ? "Your details are valid. Account creation is not connected yet."
-                : "Your details are valid. Login is not connected yet.";
         });
+
     });
+
 });
