@@ -1,46 +1,129 @@
-<html>
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
-	<title>login</title>
-	<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#151923">
+    <meta name="description" content="Log in to your Wavy account.">
+
+    <title>Log In | Wavy</title>
+
+    <link rel="stylesheet" href="./style.css?v=8">
+    <script src="./script.js?v=8" defer></script>
 </head>
-
 <body>
-		
-	<div class="logo">
-    <img src="wavy-logo.png" alt="Wavy logo">
-    <span>Wavy</span>
-	</div>
-	
-	<h1>Welcome back</h1>
-	<p>Log in to continue connecting.</p>
-	
-	<form class="register-form" novalidate>
-	<label for="email">Email address</label>
-	<input 	type="email" 
-			id="email" 	
-			name="email" 
-			placeholder="you@example.com"
-			required>
-	<br>
-	<label for="password">Password</label>
 
-<div class="password-field">
-    <input 	type="password" 
-			id="password" 
-			name="password"
-			placeholder="Enter your password" 
-			required>
+    <header class="logo">
+        <svg class="logo-icon" viewBox="0 0 48 48" role="img" aria-label="Wavy">
+            <path d="M13 5 H35 Q43 5 43 13 V33 Q43 41 35 41 H13 L5 45 V13 Q5 5 13 5Z"
+                  fill="none" stroke="#A5FF5F" stroke-width="2.8"
+                  stroke-linejoin="round"/>
+            <path d="M13 17 L19 30 L24 19 L29 30 L35 17"
+                  fill="none" stroke="#FFFFFF" stroke-width="3.2"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Wavy</span>
+    </header>
 
-    <button type="button" 
-			class="password-toggle"
-            aria-label="Show password"
-            aria-pressed="false">Show
-    </button>
-</div>
-	<br>
-	<button type="submit" id="login" name="login">Log in</button>
-	</form>
-	<p>Don't have an account?<a href="Registration.html">Create account</a></p>
-<script src="script.js" defer></script>
+    <main class="page-content">
+
+        <h1>Welcome back</h1>
+        <p class="subtitle">Log in to continue connecting.</p>
+
+        <form class="register-form" id="loginForm" novalidate>
+
+            <div class="form-group">
+                <label for="email">Email address</label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="you@example.com"
+                    autocomplete="email"
+                    aria-describedby="emailError"
+                >
+                <p class="error-message" id="emailError" hidden></p>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+
+                <div class="password-field">
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        aria-describedby="passwordStrength passwordRules passwordError"
+                    >
+
+                    <button
+                        type="button"
+                        class="password-toggle"
+                        aria-label="Show password"
+                        aria-pressed="false"
+                    >Show</button>
+                </div>
+
+                <!-- Same password strength meter as registration -->
+
+                <div class="password-strength" id="passwordStrength" hidden>
+                    <div class="strength-track">
+                        <span class="strength-fill" id="strengthFill"></span>
+                    </div>
+                    <span class="strength-label" id="strengthLabel"></span>
+                </div>
+
+                <!-- Same five password rules -->
+
+                <ul class="password-checklist" id="passwordRules" hidden>
+                    <li class="password-rule" data-rule="length">
+                        <span class="rule-status">Not yet</span>
+                        <span>At least 8 characters</span>
+                    </li>
+                    <li class="password-rule" data-rule="uppercase">
+                        <span class="rule-status">Not yet</span>
+                        <span>One uppercase letter (A-Z)</span>
+                    </li>
+                    <li class="password-rule" data-rule="lowercase">
+                        <span class="rule-status">Not yet</span>
+                        <span>One lowercase letter (a-z)</span>
+                    </li>
+                    <li class="password-rule" data-rule="number">
+                        <span class="rule-status">Not yet</span>
+                        <span>One number (0-9)</span>
+                    </li>
+                    <li class="password-rule" data-rule="special">
+                        <span class="rule-status">Not yet</span>
+                        <span>One special character (!@#$%)</span>
+                    </li>
+                </ul>
+
+                <p class="error-message" id="passwordError" hidden></p>
+
+                <div class="forgot-row">
+                    <button type="button" class="forgot-link" id="forgotPassword">
+                        Forgot password?
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-button">
+                Log in
+            </button>
+
+            <p class="form-message" aria-live="polite" hidden></p>
+
+        </form>
+
+        <p class="register-footer">
+            Don't have an account?
+            <a href="./index.html">Create account</a>
+        </p>
+
+    </main>
+
 </body>
 </html>
